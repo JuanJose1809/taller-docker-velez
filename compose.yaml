@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: prestamos_user
+      POSTGRES_PASSWORD: prestamos_pass123
+      POSTGRES_DB: prestamos_db
+    volumes:
+      - datos_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prestamos_user -d prestamos_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "9000:9000"
+    environment:
+      PRESTAMOS_DB_URL: postgresql+psycopg://prestamos_user:prestamos_pass123@db:5432/prestamos_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  datos_postgres:
